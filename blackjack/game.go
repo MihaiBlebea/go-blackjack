@@ -2,6 +2,7 @@ package blackjack
 
 import (
 	"deckofcards/deck"
+	"go-blackjack/persistence"
 	"log"
 )
 
@@ -36,11 +37,13 @@ type GameState struct {
 	Dealer Hand
 	Bet    int
 	Credit int
+	Logger persistence.Logger
 }
 
 type Options struct {
 	Rounds int
 	Credit int
+	Logger persistence.Logger
 }
 
 func (gs *GameState) CurrentPlayer() *Hand {
@@ -61,6 +64,7 @@ func New(options Options) *GameState {
 		Turn:   ShuffleStage,
 		Credit: options.Credit,
 		Rounds: options.Rounds,
+		Logger: options.Logger,
 	}
 }
 
@@ -145,26 +149,36 @@ func EndGame(gs *GameState) {
 		log.Panic("The game turn is not ScoreStage")
 	}
 
-	// var result GameResult
+	var result GameResult
 	switch {
 	case gs.Player.Score() == 21:
-		// result = Blackjack
+		result = Blackjack
 		gs.Credit += gs.Bet + int(float64(gs.Bet)*1.5)
 	case gs.Player.Score() > 21:
-		// result = PlayerBust
+		result = PlayerBust
 		gs.Credit -= gs.Bet
 	case gs.Dealer.Score() > 21:
-		// result = DealerBust
+		result = DealerBust
 		gs.Credit += gs.Bet
 	case gs.Player.Score() == gs.Dealer.Score():
-		// result = Draw
+		result = Draw
 	case gs.Player.Score() > gs.Dealer.Score():
-		// result = PlayerWon
+		result = PlayerWon
 		gs.Credit += gs.Bet
 	case gs.Player.Score() < gs.Dealer.Score():
-		// result = DealerWon
+		result = DealerWon
 		gs.Credit -= gs.Bet
 	}
+
+	// Log game
+	gs.Logger.LogDealerHand(gs.Dealer.GetCards())
+	gs.Logger.LogPlayerHand(gs.Player.GetCards())
+	gs.Logger.LogDealerScore(gs.Dealer.Score())
+	gs.Logger.LogPlayerScore(gs.Player.Score())
+	gs.Logger.LogBet(gs.Bet)
+	gs.Logger.LogResult(int(result))
+	gs.Logger.LogCredit(gs.Credit)
+	gs.Logger.Persist()
 
 	gs.Rounds--
 
