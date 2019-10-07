@@ -182,7 +182,9 @@ func EndGame(gs *GameState) {
 
 	gs.Rounds--
 
-	if gs.Rounds == 0 || gs.Credit <= 0 {
+	// End game when there is no more credit or when finishing all rounds
+	// if gs.Rounds == 0 || gs.Credit <= 0 {
+	if gs.Rounds == 0 {
 		gs.Turn = GameOver
 	} else {
 		gs.Turn = ShuffleStage

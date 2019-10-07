@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"go-blackjack/blackjack"
 	"go-blackjack/persistence"
+	"time"
 )
 
 func main() {
@@ -15,7 +16,11 @@ func main() {
 
 	// ai := blackjack.HumanAi{}
 	ai := blackjack.ComputerAi{}
-	finalScore := game.Play(&ai)
 
-	fmt.Println(finalScore)
+	start := time.Now()
+	finalScore := game.Play(&ai)
+	end := time.Now().Sub(start)
+
+	fmt.Printf("Time: %v \n", end)
+	fmt.Printf("Credit: %v \n", finalScore)
 }
